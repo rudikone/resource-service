@@ -1,7 +1,4 @@
 spring:
-  security:
-    user:
-      password: default-pass
   jpa:
     properties:
       hibernate:
@@ -10,10 +7,10 @@ spring:
     hibernate:
       ddl-auto: create-drop
   datasource:
-    url: jdbc:h2:mem:ss
+    url: jdbc:h2:mem:testdb
     driver-class-name: org.h2.Driver
-    username:
-    password:
+    username: sa
+    password: password
 
 server:
   port: 9000
