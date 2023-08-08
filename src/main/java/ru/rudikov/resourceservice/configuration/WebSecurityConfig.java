@@ -7,15 +7,13 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import ru.rudikov.resourceservice.application.service.auth.JwtFilter;
+
+import static org.springframework.http.HttpMethod.GET;
+import static ru.rudikov.resourceservice.application.domain.model.dto.Role.ADMIN;
+import static ru.rudikov.resourceservice.application.domain.model.dto.Role.USER;
 
 @RequiredArgsConstructor
 @Configuration
@@ -33,36 +31,17 @@ public class WebSecurityConfig {
                         sessionManagementCustomizer.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(authorizeHttpRequestsCustomizer ->
-                            authorizeHttpRequestsCustomizer
-                                    .requestMatchers("/api/auth/login", "/api/auth/token").permitAll()
-//                                    .requestMatchers(GET, "/resource/**").hasAnyRole("USER", "ADMIN")
-//                                    .requestMatchers("/resource/**").hasRole("ADMIN")
-                                    .anyRequest().authenticated()
+                        authorizeHttpRequestsCustomizer
+                                .requestMatchers("/api/auth/login", "/api/auth/token").permitAll()
+                                .requestMatchers(GET, "/resource/**").hasAnyAuthority(
+                                        USER.getAuthority(), ADMIN.getAuthority()
+                                )
+                                .requestMatchers("/resource/**").hasAuthority(ADMIN.getAuthority())
+                                .anyRequest().authenticated()
 
                 )
                 .addFilterAfter(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
-    }
-
-    @Bean
-    public UserDetailsService userDetailsService() {
-        UserDetails user = User
-                .withUsername("user")
-                .password(passwordEncoder().encode("password"))
-                .roles("USER")
-                .build();
-
-        UserDetails admin = User
-                .withUsername("admin")
-                .password(passwordEncoder().encode("admin"))
-                .roles("ADMIN")
-                .build();
-        return new InMemoryUserDetailsManager(user, admin);
-    }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
     }
 }
