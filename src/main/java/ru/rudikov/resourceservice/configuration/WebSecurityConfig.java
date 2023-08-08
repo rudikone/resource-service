@@ -1,10 +1,12 @@
 package ru.rudikov.resourceservice.configuration;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -12,29 +14,33 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import ru.rudikov.resourceservice.application.service.auth.JwtFilter;
 
-import static org.springframework.http.HttpMethod.GET;
-
+@RequiredArgsConstructor
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig {
 
-    @Bean
-    public SecurityFilterChain filterChain(
-            HttpSecurity http,
-            AppBasicAuthenticationEntryPoint authenticationEntryPoint
-    ) throws Exception {
+    private final JwtFilter jwtFilter;
 
-        http.authorizeHttpRequests((authorizeHttpRequestsCustomizer) -> {
-                    authorizeHttpRequestsCustomizer
-                            .requestMatchers(GET, "/resource/**").hasAnyRole("USER", "ADMIN")
-                            .requestMatchers("/resource/**").hasRole("ADMIN");
-                    authorizeHttpRequestsCustomizer.anyRequest().authenticated();
-                })
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
+        http.httpBasic(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable)
-                .httpBasic(httpBasicCustomizer ->
-                        httpBasicCustomizer.authenticationEntryPoint(authenticationEntryPoint)
-                );
+                .sessionManagement(sessionManagementCustomizer ->
+                        sessionManagementCustomizer.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+                .authorizeHttpRequests(authorizeHttpRequestsCustomizer ->
+                            authorizeHttpRequestsCustomizer
+                                    .requestMatchers("/api/auth/login", "/api/auth/token").permitAll()
+//                                    .requestMatchers(GET, "/resource/**").hasAnyRole("USER", "ADMIN")
+//                                    .requestMatchers("/resource/**").hasRole("ADMIN")
+                                    .anyRequest().authenticated()
+
+                )
+                .addFilterAfter(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
