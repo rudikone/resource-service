@@ -1,7 +1,7 @@
 package ru.rudikov.resourceservice.application.port.primary;
 
-import jakarta.security.auth.message.AuthException;
 import lombok.NonNull;
+import ru.rudikov.resourceservice.application.domain.exception.AuthException;
 import ru.rudikov.resourceservice.application.domain.model.auth.jwt.JwtRequest;
 import ru.rudikov.resourceservice.application.domain.model.auth.jwt.JwtResponse;
 

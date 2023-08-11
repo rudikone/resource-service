@@ -1,0 +1,18 @@
+version: '3.7'
+
+services:
+  mongodb:
+    image: mongo
+    restart: always
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=test
+      - MONGO_INITDB_ROOT_PASSWORD=test
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./src/main/resources/docker/create-db.js:/docker-entrypoint-initdb.d/create-db.js:ro
+    healthcheck:
+      test: [ "CMD", "mongo", "--eval", "db.adminCommand('ping')" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3

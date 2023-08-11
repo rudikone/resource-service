@@ -1,15 +1,13 @@
 package ru.rudikov.resourceservice.adapter.secondary.db.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-@Entity
-@Getter
-@Setter
+@Document(value = "resource_objects")
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class ResourceObjectEntity {

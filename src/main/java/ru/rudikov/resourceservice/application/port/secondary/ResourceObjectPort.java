@@ -1,10 +1,11 @@
 package ru.rudikov.resourceservice.application.port.secondary;
 
+import reactor.core.publisher.Mono;
 import ru.rudikov.resourceservice.application.domain.model.dto.ResourceObject;
 
 public interface ResourceObjectPort {
 
-    public Integer save(ResourceObject resourceObject);
+    Mono<Integer> save(ResourceObject resourceObject);
 
-    public ResourceObject get(int id);
+    Mono<ResourceObject> get(int id);
 }
