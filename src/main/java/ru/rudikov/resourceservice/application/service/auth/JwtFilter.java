@@ -32,9 +32,7 @@ public class JwtFilter implements WebFilter {
             final JwtAuthentication jwtInfoToken = JwtUtils.generate(claims);
             jwtInfoToken.setAuthenticated(true);
 
-            return chain.filter(exchange).contextWrite(
-                    ReactiveSecurityContextHolder.withAuthentication(jwtInfoToken)
-            );
+            return chain.filter(exchange).contextWrite(ReactiveSecurityContextHolder.withAuthentication(jwtInfoToken));
         }
 
         return chain.filter(exchange);

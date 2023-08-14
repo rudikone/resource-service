@@ -4,30 +4,26 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.MockBeans;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.reactive.server.WebTestClient;
 import ru.rudikov.resourceservice.application.domain.model.dto.ResourceObject;
 import ru.rudikov.resourceservice.application.port.primary.ResourcePort;
 import ru.rudikov.resourceservice.application.service.auth.JwtService;
 import ru.rudikov.resourceservice.configuration.WebSecurityConfig;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-
-@WebMvcTest(controllers = ResourceController.class)
+@WebFluxTest(controllers = ResourceController.class)
 @MockBeans(@MockBean(ResourcePort.class))
 @Import({WebSecurityConfig.class, JwtService.class,})
 public class ResourceControllerTest {
 
     @Autowired
-    private MockMvc mockMvc;
+    private WebTestClient webTestClient;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -40,19 +36,28 @@ public class ResourceControllerTest {
 
         @Test
         @WithMockUser(authorities = USER)
-        public void Should_Return_Ok_For_User() throws Exception {
-            mockMvc.perform(get("/resource/1")).andExpect(status().isOk());
+        public void Should_Return_Ok_For_User() {
+            webTestClient.get()
+                    .uri("/resource/1")
+                    .exchange()
+                    .expectStatus().isOk();
         }
 
         @Test
         @WithMockUser(authorities = ADMIN)
-        public void Should_Return_Ok_For_Admin() throws Exception {
-            mockMvc.perform(get("/resource/1")).andExpect(status().isOk());
+        public void Should_Return_Ok_For_Admin() {
+            webTestClient.get()
+                    .uri("/resource/1")
+                    .exchange()
+                    .expectStatus().isOk();
         }
 
         @Test
-        public void Should_Return_isForbidden_For_Anonymous() throws Exception {
-            mockMvc.perform(get("/resource")).andExpect(status().isForbidden());
+        public void Should_Return_isUnauthorized_For_Anonymous() {
+            webTestClient.get()
+                    .uri("/resource/1")
+                    .exchange()
+                    .expectStatus().isUnauthorized();
         }
     }
 
@@ -64,10 +69,12 @@ public class ResourceControllerTest {
         public void Should_Return_isForbidden_For_User() throws Exception {
             var resourceObject = new ResourceObject(1, "value", "path");
 
-            mockMvc.perform(post("/resource")
+            webTestClient.post()
+                    .uri("/resource")
                     .contentType(APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(resourceObject))
-            ).andExpect(status().isForbidden());
+                    .bodyValue(objectMapper.writeValueAsString(resourceObject))
+                    .exchange()
+                    .expectStatus().isForbidden();
         }
 
         @Test
@@ -75,20 +82,24 @@ public class ResourceControllerTest {
         public void Should_Return_Ok_For_Admin() throws Exception {
             var resourceObject = new ResourceObject(1, "value", "path");
 
-            mockMvc.perform(post("/resource")
+            webTestClient.post()
+                    .uri("/resource")
                     .contentType(APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(resourceObject))
-            ).andExpect(status().isOk());
+                    .bodyValue(objectMapper.writeValueAsString(resourceObject))
+                    .exchange()
+                    .expectStatus().isOk();
         }
 
         @Test
-        public void Should_Return_isForbidden_For_Anonymous() throws Exception {
+        public void Should_Return_isUnauthorized_For_Anonymous() throws Exception {
             var resourceObject = new ResourceObject(1, "value", "path");
 
-            mockMvc.perform(post("/resource")
+            webTestClient.post()
+                    .uri("/resource")
                     .contentType(APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(resourceObject))
-            ).andExpect(status().isForbidden());
+                    .bodyValue(objectMapper.writeValueAsString(resourceObject))
+                    .exchange()
+                    .expectStatus().isUnauthorized();
         }
     }
 }
