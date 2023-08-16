@@ -1,4 +1,4 @@
-package ru.rudikov.resourceservice.adapter.secondary.db;
+package ru.rudikov.resourceservice.adapter.secondary.db.resource;
 
 import lombok.RequiredArgsConstructor;
 import lombok.val;
@@ -14,7 +14,6 @@ public class ResourceObjectAdapter implements ResourceObjectPort {
 
     private final ResourceObjectRepository repository;
 
-
     @Override
     public Mono<Integer> save(ResourceObject resourceObject) {
         val entity = new ResourceObjectEntity(
@@ -25,7 +24,6 @@ public class ResourceObjectAdapter implements ResourceObjectPort {
 
         return repository.save(entity).map(ResourceObjectEntity::getId);
     }
-
 
     @Override
     public Mono<ResourceObject> get(int id) {

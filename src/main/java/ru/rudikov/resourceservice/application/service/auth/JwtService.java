@@ -12,7 +12,7 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import ru.rudikov.resourceservice.application.domain.model.dto.User;
+import ru.rudikov.resourceservice.application.domain.model.dto.UserManagementDto;
 
 import javax.crypto.SecretKey;
 import java.security.Key;
@@ -36,24 +36,24 @@ public class JwtService {
         this.jwtRefreshSecret = Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtRefreshSecret));
     }
 
-    public String generateAccessToken(@NonNull User user) {
+    public String generateAccessToken(@NonNull UserManagementDto userManagementDto) {
         final LocalDateTime now = LocalDateTime.now();
         final Instant accessExpirationInstant = now.plusMinutes(5).atZone(ZoneId.systemDefault()).toInstant();
         final Date accessExpiration = Date.from(accessExpirationInstant);
         return Jwts.builder()
-                .setSubject(user.getLogin())
+                .setSubject(userManagementDto.getLogin())
                 .setExpiration(accessExpiration)
                 .signWith(jwtAccessSecret)
-                .claim("roles", user.getRoles())
+                .claim("roles", userManagementDto.getRoles())
                 .compact();
     }
 
-    public String generateRefreshToken(@NonNull User user) {
+    public String generateRefreshToken(@NonNull UserManagementDto userManagementDto) {
         final LocalDateTime now = LocalDateTime.now();
         final Instant refreshExpirationInstant = now.plusDays(30).atZone(ZoneId.systemDefault()).toInstant();
         final Date refreshExpiration = Date.from(refreshExpirationInstant);
         return Jwts.builder()
-                .setSubject(user.getLogin())
+                .setSubject(userManagementDto.getLogin())
                 .setExpiration(refreshExpiration)
                 .signWith(jwtRefreshSecret)
                 .compact();

@@ -1,4 +1,4 @@
-package ru.rudikov.resourceservice.application.domain.model.dto;
+package ru.rudikov.resourceservice.application.domain.model.auth.jwt;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
@@ -9,11 +9,11 @@ public enum Role implements GrantedAuthority {
     ADMIN("ADMIN"),
     USER("USER");
 
-    private final String vale;
+    private final String value;
 
     @Override
     public String getAuthority() {
-        return vale;
+        return value;
     }
 
 }

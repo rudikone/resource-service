@@ -4,13 +4,13 @@ import io.jsonwebtoken.Claims;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
 import ru.rudikov.resourceservice.application.domain.exception.AuthException;
 import ru.rudikov.resourceservice.application.domain.model.auth.jwt.JwtRequest;
 import ru.rudikov.resourceservice.application.domain.model.auth.jwt.JwtResponse;
-import ru.rudikov.resourceservice.application.domain.model.dto.User;
 import ru.rudikov.resourceservice.application.port.primary.AuthPort;
+import ru.rudikov.resourceservice.application.port.secondary.UserPort;
 import ru.rudikov.resourceservice.application.service.auth.JwtService;
-import ru.rudikov.resourceservice.application.service.auth.UserService;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,59 +19,63 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AuthUseCase implements AuthPort {
 
-    private final UserService userService;
+    private final UserPort userPort;
     private final JwtService jwtService;
     private final Map<String, String> refreshStorage = new HashMap<>(); //использовать хранилище
 
-
     @Override
-    public JwtResponse login(@NonNull JwtRequest authRequest) throws AuthException {
-        final User user = userService.getByLogin(authRequest.getLogin())
-                .orElseThrow(() -> new AuthException("Пользователь не найден"));
-
-        if (user.getPassword().equals(authRequest.getPassword())) {
-            final String accessToken = jwtService.generateAccessToken(user);
-            final String refreshToken = jwtService.generateRefreshToken(user);
-            refreshStorage.put(user.getLogin(), refreshToken);
-            return new JwtResponse(accessToken, refreshToken);
-        } else {
-            throw new AuthException("Неправильный пароль");
-        }
+    public Mono<JwtResponse> login(@NonNull JwtRequest authRequest) {
+        return userPort.getByLogin(authRequest.getLogin())
+                .switchIfEmpty(Mono.error(new AuthException("Пользователь не найден")))
+                .flatMap(userDto -> {
+                    if (userDto.getPassword().equals(authRequest.getPassword())) {
+                        final String accessToken = jwtService.generateAccessToken(userDto);
+                        final String refreshToken = jwtService.generateRefreshToken(userDto);
+                        refreshStorage.put(userDto.getLogin(), refreshToken);
+                        return Mono.just(new JwtResponse(accessToken, refreshToken));
+                    } else {
+                        return Mono.error(new AuthException("Неправильный пароль"));
+                    }
+                });
     }
 
     @Override
-    public JwtResponse getAccessToken(@NonNull String refreshToken) throws AuthException {
+    public Mono<JwtResponse> getAccessToken(@NonNull String refreshToken) {
         if (jwtService.validateRefreshToken(refreshToken)) {
             final Claims claims = jwtService.getRefreshClaims(refreshToken);
             final String login = claims.getSubject();
             final String refreshTokenFromDb = refreshStorage.get(login);
 
             if (refreshTokenFromDb != null && refreshTokenFromDb.equals(refreshToken)) {
-                final User user = userService.getByLogin(login)
-                        .orElseThrow(() -> new AuthException("Пользователь не найден"));
-                final String accessToken = jwtService.generateAccessToken(user);
-                return new JwtResponse(accessToken, null);
+                return userPort.getByLogin(login)
+                        .switchIfEmpty(Mono.error(new AuthException("Пользователь не найден")))
+                        .flatMap(userDto -> {
+                            final String accessToken = jwtService.generateAccessToken(userDto);
+                            return Mono.just(new JwtResponse(accessToken, null));
+                        });
             }
         }
-        return new JwtResponse(null, null);
+        return Mono.just(new JwtResponse(null, null));
     }
 
     @Override
-    public JwtResponse refresh(@NonNull String refreshToken) throws AuthException {
+    public Mono<JwtResponse> refresh(@NonNull String refreshToken) {
         if (jwtService.validateRefreshToken(refreshToken)) {
             final Claims claims = jwtService.getRefreshClaims(refreshToken);
             final String login = claims.getSubject();
             final String refreshTokenFromDb = refreshStorage.get(login);
 
             if (refreshTokenFromDb != null && refreshTokenFromDb.equals(refreshToken)) {
-                final User user = userService.getByLogin(login)
-                        .orElseThrow(() -> new AuthException("Пользователь не найден"));
-                final String accessToken = jwtService.generateAccessToken(user);
-                final String newRefreshToken = jwtService.generateRefreshToken(user);
-                refreshStorage.put(user.getLogin(), newRefreshToken);
-                return new JwtResponse(accessToken, newRefreshToken);
+                return userPort.getByLogin(login)
+                        .switchIfEmpty(Mono.error(new AuthException("Пользователь не найден")))
+                        .flatMap(userDto -> {
+                            final String accessToken = jwtService.generateAccessToken(userDto);
+                            final String newRefreshToken = jwtService.generateRefreshToken(userDto);
+                            refreshStorage.put(userDto.getLogin(), newRefreshToken);
+                            return Mono.just(new JwtResponse(accessToken, newRefreshToken));
+                        });
             }
         }
-        throw new AuthException("Невалидный JWT токен");
+        return Mono.error(new AuthException("Невалидный JWT токен"));
     }
 }

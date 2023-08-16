@@ -4,7 +4,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import ru.rudikov.resourceservice.application.domain.model.dto.Role;
 
 import java.util.Collection;
 import java.util.Set;

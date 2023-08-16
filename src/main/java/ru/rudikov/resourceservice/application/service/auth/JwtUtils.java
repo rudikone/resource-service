@@ -4,7 +4,7 @@ import io.jsonwebtoken.Claims;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import ru.rudikov.resourceservice.application.domain.model.auth.jwt.JwtAuthentication;
-import ru.rudikov.resourceservice.application.domain.model.dto.Role;
+import ru.rudikov.resourceservice.application.domain.model.auth.jwt.Role;
 
 import java.util.List;
 import java.util.Set;

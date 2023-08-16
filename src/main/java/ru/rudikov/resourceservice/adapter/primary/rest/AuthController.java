@@ -21,20 +21,17 @@ public class AuthController {
 
     @PostMapping("login")
     public Mono<JwtResponse> login(@RequestBody JwtRequest authRequest) throws AuthException {
-        final JwtResponse token = authPort.login(authRequest);
-        return Mono.just(token);
+        return authPort.login(authRequest);
     }
 
     @PostMapping("token")
     public Mono<JwtResponse> getNewAccessToken(@RequestBody RefreshJwtRequest request) throws AuthException {
-        final JwtResponse token = authPort.getAccessToken(request.getRefreshToken());
-        return Mono.just(token);
+        return authPort.getAccessToken(request.getRefreshToken());
     }
 
     @PostMapping("refresh")
     public Mono<JwtResponse> getNewRefreshToken(@RequestBody RefreshJwtRequest request) throws AuthException {
-        final JwtResponse token = authPort.refresh(request.getRefreshToken());
-        return Mono.just(token);
+        return authPort.refresh(request.getRefreshToken());
     }
 
 }
