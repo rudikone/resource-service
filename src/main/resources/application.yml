@@ -33,6 +33,9 @@ logging:
         http:
           client: DEBUG
 
-#springdoc:
-#  swagger-ui:
-#    path: /swagger-ui/index.html
+
+springdoc:
+  swagger-ui:
+    path: /swagger-doc/swagger-ui.html
+  api-docs:
+    path: /swagger-doc/v3/api-docs

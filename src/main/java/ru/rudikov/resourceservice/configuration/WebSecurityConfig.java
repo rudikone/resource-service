@@ -25,26 +25,19 @@ public class WebSecurityConfig {
                 .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .authorizeExchange(authorizeExchangeCustomizer ->
-                                authorizeExchangeCustomizer
-                                        .pathMatchers(
-                                                "/api/auth/login",
-                                                "/api/auth/token"
-//                                        "/swagger-ui/index.html",
-//                                        "/swagger-ui/**",
-//                                        "/v3/api-docs/**",
-//                                        "/webjars/**"
-                                        )
-                                        .permitAll()
-                                        .pathMatchers(POST, "/resource/**")
-                                        .hasAuthority(ADMIN.getAuthority())
-                                        .pathMatchers(POST, "/users/**")
-                                        .hasAuthority(ADMIN.getAuthority())
-                                        .pathMatchers(PUT, "/users/**")
-                                        .hasAuthority(ADMIN.getAuthority())
-                                        .pathMatchers(DELETE, "/users/**")
-                                        .hasAuthority(ADMIN.getAuthority())
-                                        .anyExchange()
-                                        .authenticated()
+                        authorizeExchangeCustomizer
+                                .pathMatchers("/api/auth/login", "/api/auth/token", "/swagger-doc/**")
+                                .permitAll()
+                                .pathMatchers(POST, "/resource/**")
+                                .hasAuthority(ADMIN.getAuthority())
+                                .pathMatchers(POST, "/users/**")
+                                .hasAuthority(ADMIN.getAuthority())
+                                .pathMatchers(PUT, "/users/**")
+                                .hasAuthority(ADMIN.getAuthority())
+                                .pathMatchers(DELETE, "/users/**")
+                                .hasAuthority(ADMIN.getAuthority())
+                                .anyExchange()
+                                .authenticated()
                 )
                 .addFilterAt(jwtFilter, AUTHENTICATION);
 

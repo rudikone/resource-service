@@ -2,6 +2,7 @@ package ru.rudikov.resourceservice.adapter.primary.rest;
 
 //import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -25,7 +26,7 @@ import static org.springframework.http.MediaType.TEXT_EVENT_STREAM_VALUE;
 
 
 @RequiredArgsConstructor
-//@SecurityRequirement(name = "bearerAuth")
+@SecurityRequirement(name = "bearerAuth")
 @RestController
 @RequestMapping("/users")
 public class UserController {
