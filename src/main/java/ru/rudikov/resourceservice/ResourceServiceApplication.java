@@ -7,8 +7,7 @@ import org.springframework.boot.autoconfigure.security.reactive.ReactiveUserDeta
 @SpringBootApplication(exclude = {ReactiveUserDetailsServiceAutoConfiguration.class})
 public class ResourceServiceApplication {
 
-    public static void main(String[] args) {
-        SpringApplication.run(ResourceServiceApplication.class, args);
-    }
-
+  public static void main(String[] args) {
+    SpringApplication.run(ResourceServiceApplication.class, args);
+  }
 }

@@ -11,15 +11,15 @@ import ru.rudikov.resourceservice.application.port.secondary.ResourceObjectPort;
 @RequiredArgsConstructor
 public class ResourceUseCase implements ResourcePort {
 
-    private final ResourceObjectPort port;
+  private final ResourceObjectPort port;
 
-    @Override
-    public Mono<Integer> save(ResourceObject object) {
-        return port.save(object);
-    }
+  @Override
+  public Mono<Integer> save(ResourceObject object) {
+    return port.save(object);
+  }
 
-    @Override
-    public Mono<ResourceObject> get(Integer id) {
-        return port.get(id);
-    }
+  @Override
+  public Mono<ResourceObject> get(Integer id) {
+    return port.get(id);
+  }
 }

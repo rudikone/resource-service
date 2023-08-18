@@ -7,9 +7,9 @@ import ru.rudikov.resourceservice.application.domain.model.auth.jwt.JwtResponse;
 
 public interface AuthPort {
 
-    Mono<JwtResponse> login(@NonNull JwtRequest authRequest);
+  Mono<JwtResponse> login(@NonNull JwtRequest authRequest);
 
-    Mono<JwtResponse> getAccessToken(@NonNull String refreshToken);
+  Mono<JwtResponse> getAccessToken(@NonNull String refreshToken);
 
-    Mono<JwtResponse> refresh(@NonNull String refreshToken);
+  Mono<JwtResponse> refresh(@NonNull String refreshToken);
 }

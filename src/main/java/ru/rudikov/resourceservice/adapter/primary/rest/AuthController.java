@@ -17,21 +17,21 @@ import ru.rudikov.resourceservice.application.port.primary.AuthPort;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final AuthPort authPort;
+  private final AuthPort authPort;
 
-    @PostMapping("login")
-    public Mono<JwtResponse> login(@RequestBody JwtRequest authRequest) throws AuthException {
-        return authPort.login(authRequest);
-    }
+  @PostMapping("login")
+  public Mono<JwtResponse> login(@RequestBody JwtRequest authRequest) {
+    return authPort.login(authRequest);
+  }
 
-    @PostMapping("token")
-    public Mono<JwtResponse> getNewAccessToken(@RequestBody RefreshJwtRequest request) throws AuthException {
-        return authPort.getAccessToken(request.getRefreshToken());
-    }
+  @PostMapping("token")
+  public Mono<JwtResponse> getNewAccessToken(@RequestBody RefreshJwtRequest request) {
+    return authPort.getAccessToken(request.getRefreshToken());
+  }
 
-    @PostMapping("refresh")
-    public Mono<JwtResponse> getNewRefreshToken(@RequestBody RefreshJwtRequest request) throws AuthException {
-        return authPort.refresh(request.getRefreshToken());
-    }
-
+  @PostMapping("refresh")
+  public Mono<JwtResponse> getNewRefreshToken(@RequestBody RefreshJwtRequest request)
+      throws AuthException {
+    return authPort.refresh(request.getRefreshToken());
+  }
 }

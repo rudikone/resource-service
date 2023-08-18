@@ -11,9 +11,9 @@ import lombok.Setter;
 @NoArgsConstructor
 public class UserDto {
 
-    private String id;
-    private String name;
-    private int age;
-    private double salary;
-    private String department;
+  private String id;
+  private String name;
+  private int age;
+  private double salary;
+  private String department;
 }

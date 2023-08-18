@@ -5,7 +5,7 @@ import ru.rudikov.resourceservice.application.domain.model.dto.ResourceObject;
 
 public interface ResourceObjectPort {
 
-    Mono<Integer> save(ResourceObject resourceObject);
+  Mono<Integer> save(ResourceObject resourceObject);
 
-    Mono<ResourceObject> get(int id);
+  Mono<ResourceObject> get(int id);
 }

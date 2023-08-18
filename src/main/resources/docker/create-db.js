@@ -11,7 +11,7 @@ db.createCollection("users");
 
 db.users.insertMany([
     {
-        "_id": 1,
+        "_id": "1",
         "name": "Rudikov",
         "age": 28,
         "salary": 1000000,
@@ -21,7 +21,7 @@ db.users.insertMany([
         "roles": ["ADMIN"]
     },
     {
-        "_id": 2,
+        "_id": "2",
         "name": "Ivanov",
         "age": 28,
         "salary": 1000000,

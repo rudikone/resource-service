@@ -12,22 +12,21 @@ import ru.rudikov.resourceservice.application.port.secondary.ResourceObjectPort;
 @RequiredArgsConstructor
 public class ResourceObjectAdapter implements ResourceObjectPort {
 
-    private final ResourceObjectRepository repository;
+  private final ResourceObjectRepository repository;
 
-    @Override
-    public Mono<Integer> save(ResourceObject resourceObject) {
-        val entity = new ResourceObjectEntity(
-                resourceObject.getId(),
-                resourceObject.getValue(),
-                resourceObject.getPath()
-        );
+  @Override
+  public Mono<Integer> save(ResourceObject resourceObject) {
+    val entity =
+        new ResourceObjectEntity(
+            resourceObject.getId(), resourceObject.getValue(), resourceObject.getPath());
 
-        return repository.save(entity).map(ResourceObjectEntity::getId);
-    }
+    return repository.save(entity).map(ResourceObjectEntity::getId);
+  }
 
-    @Override
-    public Mono<ResourceObject> get(int id) {
-        return repository.findById(id)
-                .map(entity -> new ResourceObject(entity.getId(), entity.getValue(), entity.getPath()));
-    }
+  @Override
+  public Mono<ResourceObject> get(int id) {
+    return repository
+        .findById(id)
+        .map(entity -> new ResourceObject(entity.getId(), entity.getValue(), entity.getPath()));
+  }
 }

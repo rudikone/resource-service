@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ResourceObject {
 
-    private int id;
-    private String value;
-    private String path;
+  private int id;
+  private String value;
+  private String path;
 }

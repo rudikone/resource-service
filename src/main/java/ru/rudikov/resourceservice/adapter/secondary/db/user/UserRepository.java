@@ -6,8 +6,7 @@ import ru.rudikov.resourceservice.adapter.secondary.db.entity.User;
 
 public interface UserRepository extends ReactiveMongoRepository<User, String> {
 
-    Mono<User> getUserByLogin(String login);
+  Mono<User> getUserByLogin(String login);
 
-    Mono<User> getUserById(String id);
-
+  Mono<User> getUserById(String id);
 }

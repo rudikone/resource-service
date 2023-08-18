@@ -16,16 +16,15 @@ import ru.rudikov.resourceservice.application.port.primary.ResourcePort;
 @RequestMapping("/resource")
 public class ResourceController {
 
-    private final ResourcePort port;
+  private final ResourcePort port;
 
-    @PostMapping
-    public Mono<Integer> createResourceObject(@RequestBody ResourceObject object) {
-        return port.save(object);
-    }
+  @PostMapping
+  public Mono<Integer> createResourceObject(@RequestBody ResourceObject object) {
+    return port.save(object);
+  }
 
-    @GetMapping("/{id}")
-    public Mono<ResourceObject> getResourceObject(@PathVariable Integer id) {
-        return port.get(id);
-    }
-
+  @GetMapping("/{id}")
+  public Mono<ResourceObject> getResourceObject(@PathVariable Integer id) {
+    return port.get(id);
+  }
 }

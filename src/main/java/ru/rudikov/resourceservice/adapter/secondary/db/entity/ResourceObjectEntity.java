@@ -12,8 +12,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @NoArgsConstructor
 public class ResourceObjectEntity {
 
-    @Id
-    private Integer id;
-    private String value;
-    private String path;
+  @Id private Integer id;
+  private String value;
+  private String path;
 }
