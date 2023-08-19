@@ -55,6 +55,7 @@ dependencies {
     testImplementation 'org.springframework.kafka:spring-kafka-test'
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'org.instancio:instancio-junit:3.1.0'
+    testImplementation 'io.projectreactor:reactor-test:3.5.9'
 }
 
 spotless {
