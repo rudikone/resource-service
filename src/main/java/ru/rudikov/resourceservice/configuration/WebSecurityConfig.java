@@ -36,7 +36,7 @@ public class WebSecurityConfig {
             exceptionHandlingSpec ->
                 exceptionHandlingSpec.authenticationEntryPoint(
                     (exchange, ex) -> {
-                      log.error(ex.getMessage());
+                      log.error("Auth exception", ex);
                       return Mono.fromRunnable(
                           () -> {
                             ServerHttpResponse response = exchange.getResponse();
