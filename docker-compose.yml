@@ -10,9 +10,29 @@ services:
     ports:
       - "27017:27017"
     volumes:
-      - ./src/main/resources/docker/create-db.js:/docker-entrypoint-initdb.d/create-db.js:ro
+      - ./src/main/resources/docker/mongo/create-db.js:/docker-entrypoint-initdb.d/create-db.js:ro
     healthcheck:
       test: [ "CMD", "mongo", "--eval", "db.adminCommand('ping')" ]
       interval: 30s
       timeout: 10s
       retries: 3
+
+  prometheus:
+    container_name: prometheus
+    image: prom/prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./src/main/resources/docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+
+  grafana:
+    container_name: grafana
+    image: grafana/grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./src/main/resources/docker/grafana/dashboard.yaml:/etc/grafana/provisioning/dashboards/main.yaml
+      - ./src/main/resources/docker/grafana/dashboards:/var/lib/grafana/dashboards
+      - ./src/main/resources/docker/grafana/provisioning:/etc/grafana/provisioning
+    depends_on:
+      - prometheus

@@ -46,7 +46,8 @@ public class WebSecurityConfig {
         .authorizeExchange(
             authorizeExchangeSpec ->
                 authorizeExchangeSpec
-                    .pathMatchers("/api/auth/login", "/api/auth/token", "/swagger-doc/**")
+                    .pathMatchers(
+                        "/api/auth/login", "/api/auth/token", "/swagger-doc/**", "/actuator/**")
                     .permitAll()
                     .pathMatchers(POST, "/resource/**")
                     .hasAuthority(ADMIN.getAuthority())

@@ -1,5 +1,8 @@
 package ru.rudikov.resourceservice.application.service;
 
+import static ru.rudikov.resourceservice.application.service.MetricHelper.FAILED_RESULT;
+import static ru.rudikov.resourceservice.application.service.MetricHelper.SUCCESS_RESULT;
+
 import io.jsonwebtoken.Claims;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,21 +23,34 @@ public class AuthUseCase implements AuthPort {
 
   private final UserPort userPort;
   private final JwtService jwtService;
+  private final MetricHelper metricHelper;
   private final Map<String, String> refreshStorage = new HashMap<>(); // использовать хранилище
 
   @Override
   public Mono<JwtResponse> login(@NonNull JwtRequest authRequest) {
     return userPort
         .getByLogin(authRequest.getLogin())
-        .switchIfEmpty(Mono.error(new AuthException("Пользователь не найден")))
+        .switchIfEmpty(
+            Mono.defer(
+                () -> {
+                  metricHelper.loginCounter(FAILED_RESULT).increment();
+
+                  return Mono.error(new AuthException("Пользователь не найден"));
+                }))
         .flatMap(
             userDto -> {
               if (userDto.getPassword().equals(authRequest.getPassword())) {
                 final String accessToken = jwtService.generateAccessToken(userDto);
                 final String refreshToken = jwtService.generateRefreshToken(userDto);
                 refreshStorage.put(userDto.getLogin(), refreshToken);
+
+                metricHelper.loginCounter(SUCCESS_RESULT).increment();
+                metricHelper.updateUserGauge(refreshStorage.size());
+
                 return Mono.just(new JwtResponse(accessToken, refreshToken));
               } else {
+                metricHelper.loginCounter(FAILED_RESULT).increment();
+
                 return Mono.error(new AuthException("Неправильный пароль"));
               }
             });

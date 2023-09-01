@@ -76,3 +76,14 @@
 Объекты ресурсов хранятся в базе данных MongoDB.
 Конфигурация базы данных может быть найдена в файле `application.yml`.
 
+## Мониторинг
+
+- Необходимо запустить контейнеры с помощью команды docker-compose up, либо через Intellij IDEA run configuration с 
+именем "infrastructure"
+- Запустить Resource-service
+- Создать пользовательскую нагрузку с помощью скриптов (см. src/main/resources/docker/scripts/), которые можно запустить
+вручную, либо через Intellij IDEA run configuration по соответствующему имени, например error_curl_script
+- Перейти по адресу http://localhost:3000/ (имя пользователя - admin, пароль - admin)
+- Перейти в раздел Dashboards (Datasource и дашборды создаются автоматически при старте контейнера, см. src/main/resources/docker/prometheus, 
+/src/main/resources/docker/grafana и docker-compose.yml)
+

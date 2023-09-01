@@ -1,4 +1,6 @@
 spring:
+  application:
+    name: resource-service
   data:
     mongodb:
       authentication-database: admin
@@ -39,3 +41,9 @@ springdoc:
     path: /swagger-doc/swagger-ui.html
   api-docs:
     path: /swagger-doc/v3/api-docs
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
