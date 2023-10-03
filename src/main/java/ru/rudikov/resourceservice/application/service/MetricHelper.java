@@ -28,7 +28,7 @@ public class MetricHelper {
     return Counter.builder(LOGIN_COUNTER_NAME).tag(RESULT_TAG_NAME, result).register(registry);
   }
 
-  public void updateUserGauge(Integer count) {
-    userGauge.set(count);
+  public void updateUserGauge(Long count) {
+    userGauge.set(count.intValue());
   }
 }

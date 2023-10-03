@@ -1,11 +1,8 @@
 package ru.rudikov.resourceservice.application.service;
 
 import static ru.rudikov.resourceservice.application.service.MetricHelper.FAILED_RESULT;
-import static ru.rudikov.resourceservice.application.service.MetricHelper.SUCCESS_RESULT;
 
 import io.jsonwebtoken.Claims;
-import java.util.HashMap;
-import java.util.Map;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,6 +11,7 @@ import ru.rudikov.resourceservice.application.domain.exception.AuthException;
 import ru.rudikov.resourceservice.application.domain.model.auth.jwt.JwtRequest;
 import ru.rudikov.resourceservice.application.domain.model.auth.jwt.JwtResponse;
 import ru.rudikov.resourceservice.application.port.primary.AuthPort;
+import ru.rudikov.resourceservice.application.port.secondary.TokenPort;
 import ru.rudikov.resourceservice.application.port.secondary.UserPort;
 import ru.rudikov.resourceservice.application.service.auth.JwtService;
 
@@ -22,9 +20,9 @@ import ru.rudikov.resourceservice.application.service.auth.JwtService;
 public class AuthUseCase implements AuthPort {
 
   private final UserPort userPort;
+  private final TokenPort tokenPort;
   private final JwtService jwtService;
   private final MetricHelper metricHelper;
-  private final Map<String, String> refreshStorage = new HashMap<>(); // использовать хранилище
 
   @Override
   public Mono<JwtResponse> login(@NonNull JwtRequest authRequest) {
@@ -41,13 +39,24 @@ public class AuthUseCase implements AuthPort {
             userDto -> {
               if (userDto.getPassword().equals(authRequest.getPassword())) {
                 final String accessToken = jwtService.generateAccessToken(userDto);
-                final String refreshToken = jwtService.generateRefreshToken(userDto);
-                refreshStorage.put(userDto.getLogin(), refreshToken);
 
-                metricHelper.loginCounter(SUCCESS_RESULT).increment();
-                metricHelper.updateUserGauge(refreshStorage.size());
-
-                return Mono.just(new JwtResponse(accessToken, refreshToken));
+                return tokenPort
+                    .getByLogin(userDto.getLogin())
+                    .flatMap(refreshToken -> Mono.just(new JwtResponse(accessToken, refreshToken)))
+                    .switchIfEmpty(
+                        Mono.defer(
+                            () -> {
+                              final String refreshToken = jwtService.generateRefreshToken(userDto);
+                              return tokenPort
+                                  .put(userDto.getLogin(), refreshToken)
+                                  .then(Mono.just(new JwtResponse(accessToken, refreshToken)));
+                            }))
+                    .flatMap(
+                        jwtResponse ->
+                            tokenPort
+                                .getUsersCount()
+                                .doOnSuccess(metricHelper::updateUserGauge)
+                                .then(Mono.just(jwtResponse)));
               } else {
                 metricHelper.loginCounter(FAILED_RESULT).increment();
 
@@ -61,18 +70,24 @@ public class AuthUseCase implements AuthPort {
     if (jwtService.validateRefreshToken(refreshToken)) {
       final Claims claims = jwtService.getRefreshClaims(refreshToken);
       final String login = claims.getSubject();
-      final String refreshTokenFromDb = refreshStorage.get(login);
-
-      if (refreshTokenFromDb != null && refreshTokenFromDb.equals(refreshToken)) {
-        return userPort
-            .getByLogin(login)
-            .switchIfEmpty(Mono.error(new AuthException("Пользователь не найден")))
-            .flatMap(
-                userDto -> {
-                  final String accessToken = jwtService.generateAccessToken(userDto);
-                  return Mono.just(new JwtResponse(accessToken, null));
-                });
-      }
+      return tokenPort
+          .getByLogin(login)
+          .flatMap(
+              refreshTokenFromCache -> {
+                if (refreshTokenFromCache.equals(refreshToken)) {
+                  return userPort
+                      .getByLogin(login)
+                      .switchIfEmpty(Mono.error(new AuthException("Пользователь не найден")))
+                      .flatMap(
+                          userDto -> {
+                            final String accessToken = jwtService.generateAccessToken(userDto);
+                            return Mono.just(new JwtResponse(accessToken, null));
+                          });
+                } else {
+                  return Mono.just(new JwtResponse(null, null));
+                }
+              })
+          .switchIfEmpty(Mono.just(new JwtResponse(null, null)));
     }
     return Mono.just(new JwtResponse(null, null));
   }
@@ -82,20 +97,28 @@ public class AuthUseCase implements AuthPort {
     if (jwtService.validateRefreshToken(refreshToken)) {
       final Claims claims = jwtService.getRefreshClaims(refreshToken);
       final String login = claims.getSubject();
-      final String refreshTokenFromDb = refreshStorage.get(login);
-
-      if (refreshTokenFromDb != null && refreshTokenFromDb.equals(refreshToken)) {
-        return userPort
-            .getByLogin(login)
-            .switchIfEmpty(Mono.error(new AuthException("Пользователь не найден")))
-            .flatMap(
-                userDto -> {
-                  final String accessToken = jwtService.generateAccessToken(userDto);
-                  final String newRefreshToken = jwtService.generateRefreshToken(userDto);
-                  refreshStorage.put(userDto.getLogin(), newRefreshToken);
-                  return Mono.just(new JwtResponse(accessToken, newRefreshToken));
-                });
-      }
+      return tokenPort
+          .getByLogin(login)
+          .flatMap(
+              refreshTokenFromCache -> {
+                if (refreshTokenFromCache.equals(refreshToken)) {
+                  return userPort
+                      .getByLogin(login)
+                      .switchIfEmpty(Mono.error(new AuthException("Пользователь не найден")))
+                      .flatMap(
+                          userDto -> {
+                            final String accessToken = jwtService.generateAccessToken(userDto);
+                            final String newRefreshToken = jwtService.generateRefreshToken(userDto);
+                            return tokenPort
+                                .put(login, newRefreshToken)
+                                .then(Mono.just(new JwtResponse(accessToken, newRefreshToken)));
+                          });
+                }
+                {
+                  return Mono.error(new AuthException("Невалидный JWT токен"));
+                }
+              })
+          .switchIfEmpty(Mono.error(new AuthException("Невалидный JWT токен")));
     }
     return Mono.error(new AuthException("Невалидный JWT токен"));
   }
