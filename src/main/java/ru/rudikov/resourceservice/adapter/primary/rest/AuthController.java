@@ -1,6 +1,7 @@
 package ru.rudikov.resourceservice.adapter.primary.rest;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,5 +34,10 @@ public class AuthController {
   public Mono<JwtResponse> getNewRefreshToken(@RequestBody RefreshJwtRequest request)
       throws AuthException {
     return authPort.refresh(request.getRefreshToken());
+  }
+
+  @GetMapping("logout")
+  public Mono<Boolean> logout() {
+    return authPort.logout();
   }
 }

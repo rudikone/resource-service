@@ -12,4 +12,6 @@ public interface AuthPort {
   Mono<JwtResponse> getAccessToken(@NonNull String refreshToken);
 
   Mono<JwtResponse> refresh(@NonNull String refreshToken);
+
+  Mono<Boolean> logout();
 }

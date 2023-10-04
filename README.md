@@ -14,6 +14,7 @@
 - Spring WebFlux
 - Spring Security
 - MongoDB
+- Redis
 - JWT
 
 ## Запуск сервиса
@@ -75,6 +76,8 @@
 
 Объекты ресурсов хранятся в базе данных MongoDB.
 Конфигурация базы данных может быть найдена в файле `application.yml`.
+
+Access Token действителен в течение 5 минут, Refresh Token хранится в Redis и действителен в течение 30 дней
 
 ## Мониторинг
 
