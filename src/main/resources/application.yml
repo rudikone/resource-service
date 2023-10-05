@@ -9,6 +9,8 @@ spring:
       database: test
       username: test
       password: test
+    redis:
+      password: password
 
 server:
   port: 9000

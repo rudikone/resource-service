@@ -87,12 +87,12 @@ public class AuthUseCase implements AuthPort {
                             return Mono.just(new JwtResponse(accessToken, null));
                           });
                 } else {
-                  return Mono.just(new JwtResponse(null, null));
+                  return Mono.error(new AuthException("Невалидный JWT токен"));
                 }
               })
-          .switchIfEmpty(Mono.just(new JwtResponse(null, null)));
+          .switchIfEmpty(Mono.error(new AuthException("Необходимо повторно авторизоваться")));
     }
-    return Mono.just(new JwtResponse(null, null));
+    return Mono.error(new AuthException("Невалидный JWT токен"));
   }
 
   @Override
@@ -116,12 +116,11 @@ public class AuthUseCase implements AuthPort {
                                 .put(login, newRefreshToken)
                                 .then(Mono.just(new JwtResponse(accessToken, newRefreshToken)));
                           });
-                }
-                {
+                } else {
                   return Mono.error(new AuthException("Невалидный JWT токен"));
                 }
               })
-          .switchIfEmpty(Mono.error(new AuthException("Невалидный JWT токен")));
+          .switchIfEmpty(Mono.error(new AuthException("Необходимо повторно авторизоваться")));
     }
     return Mono.error(new AuthException("Невалидный JWT токен"));
   }
@@ -134,8 +133,6 @@ public class AuthUseCase implements AuthPort {
         .flatMap(
             jwtAuthentication -> {
               var login = jwtAuthentication.getLogin();
-//              jwtAuthentication.setAuthenticated(false);
-//              ReactiveSecurityContextHolder.withAuthentication(jwtAuthentication);
               return refreshTokenPort
                   .deleteByLogin(login)
                   .flatMap(
