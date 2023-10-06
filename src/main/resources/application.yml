@@ -11,6 +11,16 @@ spring:
       password: test
     redis:
       password: password
+  kafka:
+      producer:
+        bootstrap-servers: localhost:9092
+        key-serializer: org.apache.kafka.common.serialization.StringSerializer
+        value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+kafka:
+  producer:
+    user-auth-producer:
+      topic: user-auth-topic
 
 server:
   port: 9000

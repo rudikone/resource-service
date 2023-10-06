@@ -14,6 +14,7 @@ import ru.rudikov.resourceservice.application.domain.model.auth.jwt.JwtAuthentic
 import ru.rudikov.resourceservice.application.domain.model.auth.jwt.JwtRequest;
 import ru.rudikov.resourceservice.application.domain.model.auth.jwt.JwtResponse;
 import ru.rudikov.resourceservice.application.port.primary.AuthPort;
+import ru.rudikov.resourceservice.application.port.secondary.AuthLoggingPort;
 import ru.rudikov.resourceservice.application.port.secondary.RefreshTokenPort;
 import ru.rudikov.resourceservice.application.port.secondary.UserPort;
 import ru.rudikov.resourceservice.application.service.auth.JwtService;
@@ -26,6 +27,7 @@ public class AuthUseCase implements AuthPort {
   private final RefreshTokenPort refreshTokenPort;
   private final JwtService jwtService;
   private final MetricHelper metricHelper;
+  private final AuthLoggingPort authLoggingPort;
 
   @Override
   public Mono<JwtResponse> login(@NonNull JwtRequest authRequest) {
@@ -55,11 +57,14 @@ public class AuthUseCase implements AuthPort {
                                   .then(Mono.just(new JwtResponse(accessToken, refreshToken)));
                             }))
                     .flatMap(
-                        jwtResponse ->
-                            refreshTokenPort
-                                .getUsersCount()
-                                .doOnSuccess(metricHelper::updateUserGauge)
-                                .then(Mono.just(jwtResponse)));
+                        jwtResponse -> {
+                          authLoggingPort.send(userDto.getLogin(), userDto.getLogin() + " login");
+
+                          return refreshTokenPort
+                              .getUsersCount()
+                              .doOnSuccess(metricHelper::updateUserGauge)
+                              .then(Mono.just(jwtResponse));
+                        });
               } else {
                 metricHelper.loginCounter(FAILED_RESULT).increment();
 
@@ -136,11 +141,14 @@ public class AuthUseCase implements AuthPort {
               return refreshTokenPort
                   .deleteByLogin(login)
                   .flatMap(
-                      result ->
-                          refreshTokenPort
-                              .getUsersCount()
-                              .doOnSuccess(metricHelper::updateUserGauge)
-                              .then(Mono.just(result)));
+                      result -> {
+                        authLoggingPort.send(login, login + " logout");
+
+                        return refreshTokenPort
+                            .getUsersCount()
+                            .doOnSuccess(metricHelper::updateUserGauge)
+                            .then(Mono.just(result));
+                      });
             });
   }
 }
