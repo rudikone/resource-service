@@ -37,6 +37,7 @@ public class AuthUseCase implements AuthPort {
             Mono.defer(
                 () -> {
                   metricHelper.loginCounter(FAILED_RESULT).increment();
+                  authLoggingPort.send(authRequest.getLogin(), authRequest.getLogin() + " unsuccessfully try to login");
 
                   return Mono.error(new AuthException("Пользователь не найден"));
                 }))

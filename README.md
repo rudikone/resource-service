@@ -15,6 +15,7 @@
 - Spring Security
 - MongoDB
 - Redis
+- Kafka
 - JWT
 
 ## Запуск сервиса
@@ -54,6 +55,12 @@
 
 Этот эндпоинт позволяет пользователям аутентифицироваться и получить access и refresh токены.
 
+- URL: `/resource-service/api/auth/logout`
+- Метод: GET
+- Ответ: Boolean
+
+Этот эндпоинт позволяет пользователям удалить свой refresh токен из системы.
+
 ### Обновление access токена
 
 - URL: `/resource-service/api/auth/token`
@@ -78,6 +85,9 @@
 Конфигурация базы данных может быть найдена в файле `application.yml`.
 
 Access Token действителен в течение 5 минут, Refresh Token хранится в Redis и действителен в течение 30 дней
+
+При login/logout операциях отправляется событие в Kafka-топик user-auth-topic с сообщением вида {user login} login/logout
+и ключом user login.
 
 ## Мониторинг
 
