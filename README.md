@@ -1,8 +1,8 @@
 # Сервис ресурсов
 
-<div style="text-align: center;">
-  <img src="docs/logo.jpg" alt="Логотип проекта">
-</div>
+<p align="center">
+  <img width="60%" src="docs/logo.jpg">
+</p>
 
 Сервис представляет собой RESTful API, который позволяет пользователям создавать и
 получать объекты ResourceObject. Для авторизации используется Basic Auth, с разными правами
